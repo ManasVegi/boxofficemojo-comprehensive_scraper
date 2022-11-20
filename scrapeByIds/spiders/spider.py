@@ -1,7 +1,5 @@
 import scrapy
-from scrapy import signals
 import pandas as pd
-import time
 from ..items import MovieItem
 def getUrl(id):
     return f'https://www.boxofficemojo.com/title/{id}/credits/'
@@ -32,7 +30,7 @@ class MojoSpider(scrapy.Spider):
         editors = ','.join(response.xpath('//*[@id="principalCrew"]//tr[td[2] = "Editor"]/td[1]/a/text()').getall())
         actor1 = response.xpath('//*[@id="principalCast"]//tr[2]/td[1]//text()').extract()
         actor2 = response.xpath('//*[@id="principalCast"]//tr[3]/td[1]//text()').extract()
-        actor3 = response.xpath('//*[@id="principalCast"]//tr[4]/td[2]//text()').extract()
+        actor3 = response.xpath('//*[@id="principalCast"]//tr[4]/td[1]//text()').extract()
         # domestic_gross = response.xpath('//*[@id="a-page"]/main/div/div[3]/div[1]/div/div[1]/span[2]/span/text()').extract()
         # worldwide_gross = response.xpath('//*[@id="a-page"]/main/div/div[3]/div[1]/div/div[3]/span[2]/span/text()').extract() 
         # distributor = response.xpath('//*[@id="a-page"]/main/div/div[3]/div[4]/div[contains(span, "Distributor")]/span[2]/text()').extract()
@@ -60,28 +58,23 @@ class MojoSpider(scrapy.Spider):
         item['actor1'] = "-" if len(actor1) == 0 else actor1[0]
         item['actor2'] = "-" if len(actor2) == 0 else actor2[0]
         item['actor3'] = "-" if len(actor3) == 0 else actor3[0]
-        print(item)
-        yield item
+        if len(opening_url) > 0 and len(opening_url[0]) > 0:
+            yield scrapy.Request(f'https://www.boxofficemojo.com{opening_url[0].split("?")[0] + "/"}', self.parse_link, meta={'item': item}) 
+        else:
+            print(item)
+            yield item
         
 
-    # def parse_link(self, response):
+    def parse_link(self, response):
 
-    #     item = response.meta.get('item') #since there are no return values this is how to return item
-    #     distributor = response.xpath('//*[@id="a-page"]/main/div/div[3]/div[4]/div[span = "Distributor"]/span[2]/text()').extract() 
-    #     running_time = response.xpath('//*[@id="a-page"]/main/div/div[3]/div[4]/div[span = "Running Time"]/span[2]/text()').extract()
-    #     genres = response.xpath('//*[@id="a-page"]/main/div/div[3]/div[4]/div[span = "Genres"]/span[2]/text()').extract()
-    #     mpaa = response.xpath('//*[@id="a-page"]/main/div/div[3]/div[4]/div[span = "MPAA"]/span[2]/text()').extract()
+        item = response.meta.get('item') #since there are no return values this is how to return item
+        opening_theatres = response.xpath('//*[@id="a-page"]/main/div/div[3]/div[4]/div[contains(span, "Opening")]/span[2]/text()').extract() 
+        in_release = response.xpath('//*[@id="a-page"]/main/div/div[3]/div[4]/div[span = "In Release"]/span[2]/text()').extract()
+        widest_release = response.xpath('//*[@id="a-page"]/main/div/div[3]/div[4]/div[span = "Widest Release"]/span[2]/text()').extract()
 
-    #     budget = response.xpath('//*[@id="a-page"]/main/div/div[3]/div[4]/div[span[1] = "Budget"]//span[@class="money"]/text()').extract()
-    #     #distributor = data.xpath('[span[1]="Distributor"]/span[2].text()').extract()
-    #     # movie_title = response.xpath('//*[@id="a-page"]/main/div/div[1]/div[1]/div/div/div[2]/h1/text()')[0].extract()
-    #     #print(movie_title)
-
-    #     #title and field name must match
-    #     item['distributor'] = "-" if len(distributor) == 0 else distributor[0]
-    #     item['running_time'] = "-" if len(running_time) == 0 else running_time[0]
-    #     item['genres'] = "-" if len(genres) == 0 else genres[0]
-    #     item['mpaa'] = "-" if len(mpaa) == 0 else mpaa[0]
-    #     item['budget'] = "-" if len(budget) == 0 else budget[0]
-    #     print(item)
-    #     yield item
+        #title and field name must match
+        item['opening_theatres'] = "-" if len(opening_theatres) == 0 else opening_theatres[0].split('\n')[0]
+        item['in_release'] = "-" if len(in_release) == 0 else in_release[0]
+        item['widest_release'] = "-" if len(widest_release) == 0 else widest_release[0]
+        print(item)
+        yield item

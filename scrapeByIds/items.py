@@ -16,3 +16,6 @@ class MovieItem(scrapy.Item):
     actor1 = scrapy.Field()
     actor2 = scrapy.Field()
     actor3 = scrapy.Field()
+    opening_theatres = scrapy.Field()
+    widest_release = scrapy.Field()
+    in_release = scrapy.Field()

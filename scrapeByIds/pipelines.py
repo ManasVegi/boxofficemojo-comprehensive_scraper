@@ -11,7 +11,7 @@ from itemadapter import ItemAdapter
 import csv
 class MoviePipeline():    
     def __init__(self):
-        field_names = ['titleId', 'directors','writers','producers','composers','editors','actor1','actor2','actor3']
+        field_names = ['titleId', 'directors','writers','producers','composers','editors','actor1','actor2','actor3','opening_theatres','in_release','widest_release']
         self.csvwriter = csv.DictWriter(open("hellothere.csv", "a+", newline=''), fieldnames=field_names)
     def process_item(self, item, spider):
         self.csvwriter.writerow(item)
